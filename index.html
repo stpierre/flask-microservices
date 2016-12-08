@@ -128,11 +128,11 @@ vi is aliased to `emacs'
           </code></pre>
 
           <aside class="notes">
-            UptimeV1:
-
-            api.resource - route
-            restful.Resource
-            get()
+            <ul>
+              <li>api.resource - route</li>
+              <li>restful.Resource</li>
+              <li>get()</li>
+            </ul>
           </aside>
         </section>
 
@@ -173,11 +173,9 @@ vi is aliased to `emacs'
           </code></pre>
 
           <aside class="notes">
-            probably still have one failing test
+            <p>probably still have one failing test, unless you cheated</p>
 
-            unless you cheated
-
-            service must be restarted every time you make a change
+            <p>service must be restarted every time you make a change</p>
           </aside>
         </section>
 
@@ -202,9 +200,9 @@ vi is aliased to `emacs'
           </code></pre>
 
           <aside class="notes">
-            one less failing test!
+            <p>one less failing test!</p>
 
-            tests designed to only fail as you implement stuff
+            <p>tests designed to only fail as you implement stuff</p>
           </aside>
         </section>
 
@@ -250,9 +248,9 @@ vi is aliased to `emacs'
           </code></pre>
 
           <aside class="notes">
-            you can figure out count
+            <p>you can figure out count</p>
 
-            write iostat!
+            <p>write iostat()!</p>
           </aside>
         </section>
 
@@ -264,9 +262,9 @@ curl http://localhost:5000/v1/iostat/\?count=5\&amp;wait=1
           </code></pre>
 
           <aside class="notes">
-            Don't forget to escape your question mark and ampersand!
+            <p>escape question mark and ampersand</p>
 
-            But when you run unit tests, lots of failures!
+            <p>lots of unit test failures</p>
           </aside>
         </section>
 
@@ -302,9 +300,9 @@ curl http://localhost:5000/v1/iostat/\?count=1\&amp;wait=10
           </ol>
 
           <aside class="notes">
-            return 400
+            <p>return 400</p>
 
-            int() makes the first one easy
+            <p>int() makes the first one easy</p>
           </aside>
         </section>
 
@@ -318,9 +316,9 @@ curl http://localhost:5000/v1/iostat/\?count=1000\&amp;wait=1000
           <h3>A presentation design decision.</h3>
 
           <aside class="notes">
-            async is more important than database stuff -- it's just sqlalchemy
+            <p>async &gt; database stuff -- it's just sqlalchemy</p>
 
-            async is more important than authn -- apache/nginx can suffice
+            <p>async &gt; authn -- apache/nginx can suffice</p>
           </aside>
         </section>
 
@@ -330,10 +328,10 @@ curl http://localhost:5000/v2/iostat/
           </code></pre>
 
           <aside class="notes">
-            when v1 sucks, write v2. preserve v1 for compat
+            <p>when v1 sucks, write v2. preserve v1 for compat</p>
 
-            v2 should be full implementation. don't make ppl use v1
-            for some stuff and v2 for other stuff
+            <p>v2 is full implementation. don't make ppl use v1 for
+              some stuff and v2 for other stuff</p>
           </aside>
         </section>
 
@@ -349,9 +347,9 @@ class UptimeV1(restful.Resource):
           <h3>Introducing tasks</h3>
 
           <aside class="notes">
-            iostat returns a task
+            <p>iostat returns a task</p>
 
-            task can be polled to get resulting data
+            <p>task can be polled to get resulting data</p>
           </aside>
         </section>
 
@@ -375,10 +373,10 @@ class UptimeV1(restful.Resource):
           <h3>Celery: Distributed Task Queue</h3>
 
           <aside class="notes">
-            python software that makes this super simple
+            <p>python software that makes this super simple</p>
 
-            our implementation uses sqlite, but can use amqp, redis,
-            etc.
+            <p>our implementation uses sqlite, but can use amqp,
+              redis, etc.</p>
           </aside>
         </section>
 
@@ -388,9 +386,7 @@ class UptimeV1(restful.Resource):
           </code></pre>
 
           <aside class="notes">
-            the task is just a function
-
-            can be called sync or async
+            the task is just a function, can be called sync or async
           </aside>
         </section>
 
@@ -400,11 +396,11 @@ class UptimeV1(restful.Resource):
           </code></pre>
 
           <aside class="notes">
-            delay tells it to be async
+            <p>delay tells it to be async</p>
 
-            return value is AsyncResult obj
+            <p>return value is AsyncResult obj</p>
 
-            can return a string
+            <p>can return a string</p>
           </aside>
         </section>
 
@@ -425,11 +421,11 @@ return flask.make_response(
           </code></pre>
 
           <aside class="notes">
-            result is AsyncResult obj
+            <p>result is AsyncResult obj</p>
 
-            201 means created
+            <p>201 means created</p>
 
-            we return the URL to the task for polling
+            <p>we return the URL to the task for polling</p>
           </aside>
         </section>
 
@@ -507,9 +503,9 @@ class TaskV2(restful.Resource):
           </ul>
 
           <aside class="notes">
-            Return 404 on pending
+            <p>Return 404 on pending<p>
 
-            Stringify exceptions
+            <p>Stringify exceptions</p>
           </aside>
         </section>
 
@@ -522,7 +518,7 @@ class TaskV2(restful.Resource):
           </ul>
 
           <aside class="notes">
-            links should include self and, if appropriate, cancel
+            <p>links should include self and, if appropriate, cancel</p>
           </aside>
         </section>
 
@@ -562,14 +558,17 @@ class TaskV2(restful.Resource):
         </section>
 
         <section id="delete-return-value">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="The <a target='_blank' href=&quot;http://www.restapitutorial.com/httpstatuscodes.html&quot;>full list of HTTP return codes</a>, including the ever-useful 418."></button>
+          </div>
+
           <pre class="wide"><code class="python" data-trim>
               return flask.make_response("", 204)
           </code></pre>
 
           <aside class="notes">
             204 == accepted
-
-            <!-- todo: link to all return values -->
           </aside>
         </section>
 
