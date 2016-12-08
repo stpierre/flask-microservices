@@ -185,7 +185,7 @@ class TestIOStatV1(BaseTestCase):
               {"wait": -1, "count": 2},
               {"wait": 2})
     @ddt.unpack
-    @mock.patch("subprocess.check_output")
+    @mock.patch("subprocess.check_output", return_value="fake iostat")
     def test_get_iostat_400(self, mock_check_output, **queryargs):
         self.fetch_json(self.make_path("/v1/iostat/", **queryargs), code=400)
 
