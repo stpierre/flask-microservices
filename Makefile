@@ -14,7 +14,7 @@ venv:	venv/bin/activate
 
 venv/bin/activate: requirements.txt
 	test -d venv || virtualenv venv
-	. venv/bin/activate; env | grep VIRTUAL; pip install -r requirements.txt
+	. venv/bin/activate; env | grep VIRTUAL; pip install 'setuptools>=17.1'; pip install -r requirements.txt
 
 service:	venv
 	. venv/bin/activate; FLASK_APP=solution/app.py flask run
