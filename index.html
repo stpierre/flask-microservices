@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Writing (Micro)Services with Flask</title>
+
+    <link rel="stylesheet" href="css/reveal.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="css/theme/solarized.css" id="theme"/>
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css"/>
+
+    <link rel="stylesheet" href="local/presentation.css"/>
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+	<script src="lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section id="title">
+          <h2>Writing (Micro)Services with Flask</h2>
+
+          <p><small>Chris St. Pierre
+              - <a target="_blank" href="http://twitter.com/chris_st_pierre">@chris_st_pierre</a></small></p>
+
+          <h4>Follow along:<br />
+            <a target="_blank" href="https://stpierre.github.io/flask-microservices/">stpierre.github.io/flask-microservices/</a></h4>
+
+          <h4>Clone:<br />
+          <code style="white-space: nowrap;">git@github.com:stpierre/flask-microservices.git</code></h4>
+
+          <h4>Ensure that <code>make</code> and Python 2.7 are installed</h4>
+        </section>
+
+        <section id="intro">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="Click on this symbol for more detailed information about a topic!"></button>
+          </div>
+
+          <h3>We have three hours to write a REST API that
+            exposes <code>uptime</code> and <code>iostat</code> to the
+            internet.</h3>
+
+          <aside class="notes">
+            Mostly harmless.
+          </aside>
+        </section>
+
+        <section id="flask">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="<a target='_blank' href='http://flask.pocoo.org/'>Official Flask website and docs</a>"></button>
+          </div>
+
+          <h2>Flask</h2>
+
+          <aside class="notes">
+            Lightweight *Python* web framework.
+
+            Need Python.
+          </aside>
+        </section>
+
+        <section id="flask-restful">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="<a target='_blank' href='http://flask-restful-cn.readthedocs.io/en/0.3.5/'>Official Flask-RESTful docs</a>"></button>
+          </div>
+
+          <h2>Flask-RESTFul</h2>
+
+          <aside class="notes">
+            Flask extension to quickly build REST APIs.
+          </aside>
+        </section>
+
+        <section id="virtualenv">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="Unfamiliar with virtualenv? Here's a <a target='_blank' href='http://docs.python-guide.org/en/latest/dev/virtualenvs/'>great intro and overview</a>"></button>
+          </div>
+
+          <pre class="wide"><code class="bash" data-trim>
+              make venv
+          </code></pre>
+        </section>
+
+        <section id="uptime">
+          <h3>The basics: <code>uptime</code></h3>
+        </section>
+
+        <section id="edit-app">
+          <pre class="wide"><code class="bash" data-trim>
+              emacs solution/app.py
+          </code></pre>
+        </section>
+
+        <section id="vi">
+          <pre class="wide"><code class="bash" data-trim>
+              % alias vi=emacs
+% type vi
+vi is aliased to `emacs'
+          </code></pre>
+
+          <aside class="notes">
+            UptimeV1:
+
+            api.resource - route
+            restful.Resource
+            get()
+          </aside>
+        </section>
+
+        <section id="tests">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="The unit tests just use the builtin <a target='_blank' href='https://docs.python.org/2/library/unittest.html'><code>unittest</code></a> library, plus <a target='_blank' href='https://pypi.python.org/pypi/mock'><code>mock</code></a> and <a target='_blank' href='https://pypi.python.org/pypi/ddt'><code>ddt</code></a>"></button>
+          </div>
+
+          <pre class="wide"><code class="bash" data-trim>
+              make test
+          </code></pre>
+
+          <aside class="notes">
+            one failing test
+          </aside>
+        </section>
+
+        <section id="subprocess-check-output">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="<a target='_blank' href='https://docs.python.org/2/library/subprocess.html'>Official <code>subprocess</code> docs</a>"></button>
+          </div>
+
+          <pre class="wide"><code class="python" data-trim>
+              subprocess.check_output(["uptime"])
+          </code></pre>
+
+        </section>
+
+        <section id="uptime-test">
+          <pre class="wide"><code class="bash" data-trim>
+              make service
+          </code></pre>
+
+          <pre class="wide"><code class="bash" data-trim>
+              curl http://localhost:5000/v1/uptime/
+          </code></pre>
+
+          <aside class="notes">
+            probably still have one failing test
+
+            unless you cheated
+
+            service must be restarted every time you make a change
+          </aside>
+        </section>
+
+        <section id="return-dicts">
+          <!-- todo: why? -->
+
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="Returning a dict (an Object, in JavaScript)
+                    prevents <a target='_blank' href='http://blog.jeremiahgrossman.com/2006/01/advanced-web-attack-techniques-using.html'>a very clever type of attack</a> against your application."></button>
+            </div>
+          <h2>Always return a dict!</h2>
+
+          <aside class="notes">
+            security & stuff
+          </aside>
+        </section>
+
+        <section id="uptime-dict">
+          <pre class="wide"><code class="python" data-trim>
+              return {"uptime": subprocess.check_output(["uptime"]).strip()}
+          </code></pre>
+
+          <aside class="notes">
+            one less failing test!
+
+            tests designed to only fail as you implement stuff
+          </aside>
+        </section>
+
+        <section id="uptime-test-dict">
+          <pre class="wide"><code class="bash" data-trim>
+              % curl http://localhost:5000/v1/uptime/
+{"uptime": "20:16:57 up 14 days,  7:33, 25 users,  load average: 0.58, 0.25, 0.14"}
+          </code></pre>
+        </section>
+
+        <section id="iostat">
+          <h3>Query strings and error handling: <code>iostat</code></h3>
+        </section>
+
+        <section id="iostat-invocation">
+          <p>Mac OS:
+            <pre><code class="nohighlight" data-trim>
+                iostat -d [-c &lt;count&gt;] [-w &lt;wait&gt;]
+            </code></pre>
+          </p>
+
+          <p>Linux:
+            <pre><code class="nohighlight" data-trim>
+                iostat -d &lt;wait&gt; &lt;count&gt;
+            </code></pre>
+          </p>
+
+          <aside class="notes">
+            lots of options to iostat, these are the common options
+          </aside>
+        </section>
+
+        <section id="query-string">
+          <!-- TODO: highlight query string -->
+          <pre class="wide"><code class="nohighlight" data-trim>
+              http://localhost:5000/v1/iostat/?count=4&amp;wait=2
+          </code></pre>
+        </section>
+
+        <section id="flask-request-args">
+          <pre class="wide"><code class="python" data-trim>
+              wait = int(flask.request.args.get("wait", 1))
+          </code></pre>
+
+          <aside class="notes">
+            you can figure out count
+
+            write iostat!
+          </aside>
+        </section>
+
+        <section id="iostat-first-get">
+          <pre class="wide"><code class="bash" data-trim>
+curl http://localhost:5000/v1/iostat/
+curl http://localhost:5000/v1/iostat/\?count=2
+curl http://localhost:5000/v1/iostat/\?count=5\&amp;wait=1
+          </code></pre>
+
+          <aside class="notes">
+            Don't forget to escape your question mark and ampersand!
+
+            But when you run unit tests, lots of failures!
+          </aside>
+        </section>
+
+        <section id="idiot-proofing">
+          <blockquote>"If you make something idiot-proof, someone will
+            just make a better idiot."</blockquote>
+        </section>
+
+        <section id="dumb-iostat-examples">
+          <pre class="wide"><code class="bash" data-trim>
+curl http://localhost:5000/v1/iostat/\?count=-10
+curl http://localhost:5000/v1/iostat/\?count=1.5
+curl http://localhost:5000/v1/iostat/\?count=1\&amp;wait=10
+            </code></pre>
+        </section>
+
+        <section id="erroring-out">
+          <pre class="wide"><code class="bash" data-trim>
+              restful.abort(400, msg="Try harder, moron")
+          </code></pre>
+        </section>
+
+        <section id="dumb-iostat-scenarios">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="It might be useful to peruse <a target='_blank' href='http://www.restapitutorial.com/httpstatuscodes.html'>a list of all of the HTTP status codes</a>"></button>
+          </div>
+
+          <ol>
+            <li><code>count</code> or <code>wait</code> are not integers</li>
+            <li><code>count</code> or <code>wait</code> are less than 1</li>
+            <li><code>wait</code> is specified, but <code>count</code> is 1</li>
+          </ol>
+
+          <aside class="notes">
+            return 400
+
+            int() makes the first one easy
+          </aside>
+        </section>
+
+        <section id="iostat-timeout">
+          <pre class="wide"><code class="bash" data-trim>
+curl http://localhost:5000/v1/iostat/\?count=1000\&amp;wait=1000
+          </code></pre>
+        </section>
+
+        <section id="design-decision">
+          <h3>A presentation design decision.</h3>
+
+          <aside class="notes">
+            async is more important than database stuff -- it's just sqlalchemy
+
+            async is more important than authn -- apache/nginx can suffice
+          </aside>
+        </section>
+
+        <section id="iostat-v2">
+          <pre class="wide"><code class="bash" data-trim>
+curl http://localhost:5000/v2/iostat/
+          </code></pre>
+
+          <aside class="notes">
+            when v1 sucks, write v2. preserve v1 for compat
+
+            v2 should be full implementation. don't make ppl use v1
+            for some stuff and v2 for other stuff
+          </aside>
+        </section>
+
+        <section id="uptime-v2">
+          <pre class="wide"><code class="python" data-trim>
+@api.resource("/v1/uptime/", "/v2/uptime")
+class UptimeV1(restful.Resource):
+    ...
+          </code></pre>
+        </section>
+
+        <section id="tasks">
+          <h3>Introducing tasks</h3>
+
+          <aside class="notes">
+            iostat returns a task
+
+            task can be polled to get resulting data
+          </aside>
+        </section>
+
+        <section id="v2-api-overview">
+          <ul>
+            <li><code>/v2/uptime/</code>: no change!</li>
+            <li><code>/v2/iostat/</code>: returns task object</li>
+            <li><code>/v2/task/</code>: monitor and delete tasks</li>
+          </ul>
+
+          <aside class="notes">
+            could also make uptime return a task, for consistency
+          </aside>
+        </section>
+
+        <section id="celery">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="<a target='_blank' href='http://www.celeryproject.org/'>Official Celery website and docs</a>"></button>
+          </div>
+          <h3>Celery: Distributed Task Queue</h3>
+
+          <aside class="notes">
+            python software that makes this super simple
+
+            our implementation uses sqlite, but can use amqp, redis,
+            etc.
+          </aside>
+        </section>
+
+        <section id="edit-task">
+          <pre class="wide"><code class="bash" data-trim>
+              emacs solution/tasks.py
+          </code></pre>
+
+          <aside class="notes">
+            the task is just a function
+
+            can be called sync or async
+          </aside>
+        </section>
+
+        <section id="calling-task">
+          <pre class="wide"><code class="python" data-trim>
+              result = tasks.iostat.delay(count, wait)
+          </code></pre>
+
+          <aside class="notes">
+            delay tells it to be async
+
+            return value is AsyncResult obj
+
+            can return a string
+          </aside>
+        </section>
+
+        <section id="task-return-value">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="Official docs: <a target='_blank' href='http://flask.pocoo.org/docs/0.11/api/#flask.make_response'><code>flask.make_response()</code></a> and <a target='_blank' href='http://flask.pocoo.org/docs/0.11/api/#flask.json.jsonify'><code>flask.jsonify()</code></a>"></button>
+          </div>
+
+          <pre class="wide"><code class="python" data-trim>
+return flask.make_response(
+    flask.jsonify({"task_id": result.id,
+                   "links": [
+                       {"rel": "task",
+                        "href": api.url_for(TaskV2,
+                                            task_id=result.id)}]}),
+    201)
+          </code></pre>
+
+          <aside class="notes">
+            result is AsyncResult obj
+
+            201 means created
+
+            we return the URL to the task for polling
+          </aside>
+        </section>
+
+        <section id="create-iostat-task">
+          <pre class="wide"><code class="bash" data-trim>
+              make celery
+          </code></pre>
+
+          <pre class="wide"><code class="bash" data-trim>
+% curl http://localhost:5000/v2/iostat/
+{
+  "links": [
+    {
+      "href": "/v2/task/1800799b-bfa1-4e14-9552-02d2dd82f01a",
+      "rel": "task"
+    }
+  ],
+  "task_id": "1800799b-bfa1-4e14-9552-02d2dd82f01a"
+}
+          </code></pre>
+
+          <aside class="notes">
+            can create task, can't monitor it or get results
+          </aside>
+        </section>
+
+        <section id="task-api">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="See <a target='_blank' href='http://www.restapitutorial.com/lessons/httpmethods.html'>this handy list of the main REST HTTP verbs</a>"></button>
+          </div>
+
+          <ul>
+            <li><code>GET /v2/task/&lt;task_id&gt;/</code>: poll a
+              task</li>
+            <li><code>DELETE /v2/task/&lt;task_id&gt;/</code>: cancel
+              a task</li>
+          </ul>
+        </section>
+
+        <section id="url-params">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="The <code>&lt;string:...&gt</code> is not a type, but a werkzeug converter. See <a target='_blank' href='http://werkzeug.pocoo.org/docs/0.11/routing/#builtin-converters'>the full list of builtin converters</a>"></button>
+          </div>
+
+          <pre class="wide"><code class="python" data-trim>
+@api.resource("/v2/task/&lt;string:task_id&gt;")
+class TaskV2(restful.Resource):
+    def get(self, task_id):
+        ...
+          </code></pre>
+        </section>
+
+        <section id="instantiating-task-obj">
+          <div class="tooltip-buttons">
+            <button class="more-info" data-toggle="tooltip"
+                    title="<a target='_blank' href='http://docs.celeryproject.org/en/latest/reference/celery.result.html#celery.result.AsyncResult'>Official <code>celery.result.AsyncResult</code> docs</a>"></button>
+          </div>
+
+          <pre class="wide"><code class="python" data-trim>
+              task = tasks.app.AsyncResult(task_id)
+          </code></pre>
+        </section>
+
+        <section id="task-obj-considerations">
+          <ul>
+            <li>If <code>task.state == "PENDING"</code>, the task
+              doesn't exist.</li>
+            <li><code>task.ready()</code> tells you if the task is
+              done running and <code>task.result</code> is
+              meaningful.</li>
+            <li>If <code>task.result</code> is an exception, the task
+              failed.</li>
+          </ul>
+
+          <aside class="notes">
+            Return 404 on pending
+
+            Stringify exceptions
+          </aside>
+        </section>
+
+        <section id="task-get-return-value">
+          <ul>
+            <li><code>task_id</code></li>
+            <li><code>state</code></li>
+            <li><code>result</code>, only if the task is ready</li>
+            <li><code>links</code></li>
+          </ul>
+
+          <aside class="notes">
+            links should include self and, if appropriate, cancel
+          </aside>
+        </section>
+
+        <section id="task-get-delete-link">
+          <pre class="wide"><code class="python" data-trim>
+retval["links"].append({"rel": "cancel",
+                        "method": "DELETE",
+                        "href": api.url_for(TaskV2, task_id=task.id)})
+          </code></pre>
+
+          <aside class="notes">
+            only include this if the task can be canceled -- that is,
+            if it's not ready
+          </aside>
+        </section>
+
+        <section id="defining-delete">
+          <pre class="wide"><code class="python" data-trim>
+@api.resource("/v2/task/&lt;string:task_id&gt;")
+class TaskV2(restful.Resource):
+    def get(self, task_id):
+        ...
+
+    def delete(self, task_id):
+        ...
+          </code></pre>
+
+          <aside class="notes">
+            add a function for any HTTP verb you want to support
+          </aside>
+        </section>
+
+        <section id="deleting-task">
+          <pre class="wide"><code class="python" data-trim>
+              task.revoke()
+          </code></pre>
+        </section>
+
+        <section id="delete-return-value">
+          <pre class="wide"><code class="python" data-trim>
+              return flask.make_response("", 204)
+          </code></pre>
+
+          <aside class="notes">
+            204 == accepted
+
+            <!-- todo: link to all return values -->
+          </aside>
+        </section>
+
+        <section id="v3-db">
+          <h3>Extra credit: API v3</h3>
+          <ul>
+            <li>Create (POST), read (GET), update (PUT/PATCH), and
+              delete (DELETE) users in a database</li>
+            <li>Database can be created with <code>make
+                v3-database</code></li>
+            <li>User records have four fields: username, password,
+              admin, fullname</li>
+          </ul>
+        </section>
+
+        <section id="v3-authnz">
+          <h3>Extra credit: API v3</h3>
+          <ul>
+            <li>Use users in the database for authentication</li>
+            <li>Unauthenticated users can only
+              access <code>/v3/</code></li>
+            <li>Non-admin users cannot create, update, or delete users,
+              but can do everything else</li>
+            <li>Admin users can do everything</li>
+            <li>v1 and v2 APIs do not need authentication</li>
+          </ul>
+        </section>
+
+        <section id="v3-deets">
+          <h3>Extra credit: API v3</h3>
+          <ul>
+            <li>Unit tests are already provided</li>
+            <li>One solution is in <code>SOLUTION_DO_NOT_PEEK/</code></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="local/presentation.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../plugin/zoom-js/zoom.js', async: true },
+      { src: '../plugin/notes/notes.js', async: true }
+      ]
+      });
+
+    </script>
+
+  </body>
+</html>

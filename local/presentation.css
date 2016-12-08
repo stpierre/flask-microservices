@@ -1,0 +1,33 @@
+.reveal code {
+    text-transform: none;
+}
+
+.wide {
+    text-align: left;
+    width: 100%;
+}
+
+button.more-info {
+    border: 0;
+    box-shadow: 0 0 0;
+    width: 64px;
+    height: 64px;
+    background: url('../images/star.png');
+}
+
+.tooltip-buttons {
+    border: 0;
+    box-shadow: 0 0 0;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: none;
+    z-index: 30;
+}
+
+div.tooltip-inner {
+    background: #002b36;
+    color: #eee8d5;
+    font-size: small;
+    padding: 5px;
+}
